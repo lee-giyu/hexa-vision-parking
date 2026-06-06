@@ -1,0 +1,58 @@
+# ==========================================
+# 🚗 Hexavision Production .gitignore (2026)
+# ==========================================
+
+# 1. Environment Variables & Secrets (Strict Protection)
+.env
+.env.*
+
+# 2. Python Ecosystem & Virtual Environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+# uv and standard venv directories (Catches both)
+venv/
+.venv/
+.venv_vision/
+.venv_capture/
+env/
+.env/
+
+# 3. AI Vision Models & Large Binaries (YOLO)
+*.pt
+*.onnx
+runs/
+ai_vision/runs/
+
+# 4. Rogue Databases & Logging (Token Bloat Prevention)
+*.db
+*.sqlite3
+*.log
+log/
+logs/
+ai_vision/license_plates.db
+# Server stdout/stderr captures + editor/backup artifacts. These have leaked
+# internal Tailscale IPs and live request traffic before — never commit them.
+backend_log.txt
+nohup.out
+*.bak
+*.backup
+*.backup_*
+
+# Entrance camera captures (saved locally, pulled by the vision PC)
+captures/
+
+# Local-only demo-day runbook (kept on the operator's Pi, not version-controlled)
+DEMO_CHECKLIST.md
+
+# 5. AI Agent Metadata (Claude Code Guard) — kept local, never published
+CLAUDE.md
+.claude/
+
+# 6. IDEs & OS Garbage
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

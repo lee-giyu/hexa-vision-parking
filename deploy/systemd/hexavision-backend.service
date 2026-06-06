@@ -1,0 +1,25 @@
+[Unit]
+Description=Hexa-Vision Parking FastAPI backend (uvicorn)
+Documentation=https://github.com/hexa-vision/hexa-vision-parking
+# Start once the network stack is up (the app connects to the Aiven MySQL cloud DB).
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hv
+Group=hv
+WorkingDirectory=/home/hv/Desktop/hexa-vision-parking
+# DB_* + HEXAVISION_API_KEY + ALLOWED_ORIGINS are loaded by the app itself via
+# python-dotenv (app/core/database.py: load_dotenv(find_dotenv())), which finds
+# ./.env relative to WorkingDirectory — so no EnvironmentFile= is needed here.
+# Production: no --reload (that is a dev-only auto-restart-on-file-change flag).
+ExecStart=/home/hv/Desktop/hexa-vision-parking/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hexavision-backend
+
+[Install]
+WantedBy=multi-user.target

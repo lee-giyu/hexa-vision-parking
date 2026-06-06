@@ -1,0 +1,35 @@
+[Unit]
+Description=Hexa-Vision serial occupancy reader (SPOT->API; camera split to hexavision-capture)
+Documentation=https://github.com/hexa-vision/hexa-vision-parking
+# Single owner of /dev/ttyUSB0. In the hybrid deployment this reads serial
+# occupancy (SPOT:/exit/HB:) ONLY; the CSI camera is owned by the separate
+# hexavision-capture service (pi_client.py), so this unit no longer opens it.
+# Needs the network (POSTs SPOT: pings to the backend) and the Arduino serial.
+After=network-online.target hexavision-backend.service dev-ttyUSB0.device
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hv
+Group=hv
+# Serial access needs the 'dialout' group. ('video' no longer required here — the
+# camera moved to hexavision-capture — but kept harmless for easy rollback.)
+SupplementaryGroups=dialout video
+WorkingDirectory=/home/hv/Desktop/hexa-vision-parking
+# HEXAVISION_API_KEY is loaded by the script via python-dotenv (./.env).
+# CAPTURE_DIR / CAPTURE_COOLDOWN may be overridden here via Environment=.
+Environment=CAPTURE_DIR=/home/hv/Desktop/hexa-vision-parking/captures
+# Occupancy-only: do NOT open the camera (it belongs to hexavision-capture).
+# ENTRY: triggers are logged but not captured here.
+Environment=READER_ENABLE_CAMERA=0
+# Runs in the dedicated capture venv (built with --system-site-packages so it
+# can import the apt python3-picamera2 / python3-libcamera alongside requests).
+ExecStart=/home/hv/Desktop/hexa-vision-parking/.venv_capture/bin/python /home/hv/Desktop/hexa-vision-parking/ai_vision/unified_serial_reader.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hexavision-reader
+
+[Install]
+WantedBy=multi-user.target

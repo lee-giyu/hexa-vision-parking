@@ -1,0 +1,30 @@
+[Unit]
+Description=Hexa-Vision camera capture (pi_client.py -> vision PC)
+Documentation=https://github.com/hexa-vision/hexa-vision-parking
+# Hybrid deployment: this owns the CSI camera (IMX500) and runs the proven
+# pi_client.py capture loop, POSTing JPEG frames to the vision PC. Serial
+# occupancy (SPOT:) is handled separately by hexavision-reader, which runs with
+# READER_ENABLE_CAMERA=0 so it never opens the camera — no device contention.
+# Needs the network to reach the vision PC (pi_client.py SERVER_URL).
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hv
+Group=hv
+# The CSI camera (IMX500) needs the 'video' group. No serial here, so no dialout.
+SupplementaryGroups=video
+WorkingDirectory=/home/hv/Desktop/hexa-vision-parking
+# Runs in the capture venv (built with --system-site-packages so it can import
+# the apt python3-picamera2 / python3-libcamera alongside requests). pi_client.py
+# was updated to encode JPEG via io.BytesIO + picamera2, so it needs no cv2.
+ExecStart=/home/hv/Desktop/hexa-vision-parking/.venv_capture/bin/python /home/hv/Desktop/hexa-vision-parking/ai_vision/pi_client.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hexavision-capture
+
+[Install]
+WantedBy=multi-user.target
